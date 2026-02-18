@@ -47,6 +47,7 @@ function getTransformOptions(isServer: boolean): TransformOptions {
       require.resolve('@babel/preset-typescript'),
     ],
     plugins: [
+      require.resolve('babel-plugin-react-compiler'),
       // Polyfills the runtime needed for async/await, generators, and friends
       // https://babeljs.io/docs/en/babel-plugin-transform-runtime
       [
