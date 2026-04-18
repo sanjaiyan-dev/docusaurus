@@ -1,5 +1,8 @@
 {
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "containerEnv": {
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
+  },
   "customizations": {
     "vscode": {
       "settings": {
@@ -24,10 +27,13 @@
       ]
     }
   },
-  "forwardPorts": [3000],
+  "forwardPorts": [
+    3000
+  ],
   "containerUser": "vscode",
-  "postCreateCommand": "yarn install",
-  "waitFor": "postCreateCommand", // otherwise automated jest tests fail
+  // 2. Modified to ensure corepack is active before running yarn
+  "postCreateCommand": "corepack enable && yarn install",
+  "waitFor": "postCreateCommand",
   "features": {
     "node": {
       "version": "22"
