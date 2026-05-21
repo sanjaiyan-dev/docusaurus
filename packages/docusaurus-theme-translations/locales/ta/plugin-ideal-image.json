@@ -1,0 +1,7 @@
+{
+  "theme.IdealImageMessage.404error": "404. படம் கண்டறியப்படவில்லை",
+  "theme.IdealImageMessage.error": "வழு. மீளப் பதிவிறக்கம் செய்ய அழுத்தவும்",
+  "theme.IdealImageMessage.load": "முழுமையாகப் பதிவிறக்கம் செய்ய அழுத்தவும்{sizeMessage}",
+  "theme.IdealImageMessage.loading": "பதிவிறக்கம் செய்யப்படுகின்றது...",
+  "theme.IdealImageMessage.offline": "உங்களது இணைய உலாவி(web browser) இணையத்தொடர்பில் இல்லை. படத்தை பதிவிறக்கம் செய்ய முடியவில்லை"
+}
