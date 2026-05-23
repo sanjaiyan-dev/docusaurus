@@ -29,8 +29,7 @@ describe('theme translations', () => {
       .then((translations) =>
         Object.fromEntries(
           translations
-            .map(Object.entries)
-            .flat()
+            .flatMap(Object.entries)
             .filter(([key]) => !key.endsWith('___DESCRIPTION')),
         ),
       );
