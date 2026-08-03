@@ -38,13 +38,13 @@ const DEFAULT_I18N_LOCALE = 'en';
 
 const SiteUrlSchema = Joi.string()
   .custom((value: string, helpers) => {
-    try {
-      const {pathname} = new URL(value);
-      if (pathname !== '/') {
-        return helpers.error('docusaurus.subPathError', {pathname});
-      }
-    } catch {
+    const url = URL.parse(value);
+    if (url === null) {
       return helpers.error('any.invalid');
+    }
+    const {pathname} = url;
+    if (pathname !== '/') {
+      return helpers.error('docusaurus.subPathError', {pathname});
     }
     return removeTrailingSlash(value);
   })
@@ -99,7 +99,6 @@ export const DEFAULT_FASTER_CONFIG_TRUE: FasterConfig = {
 };
 
 export const DEFAULT_FUTURE_V4_CONFIG: FutureV4Config = {
-  removeLegacyPostBuildHeadAttribute: false,
   useCssCascadeLayers: false,
   siteStorageNamespacing: false,
   fasterByDefault: false,
@@ -108,7 +107,6 @@ export const DEFAULT_FUTURE_V4_CONFIG: FutureV4Config = {
 
 // When using the "v4: true" shortcut
 export const DEFAULT_FUTURE_V4_CONFIG_TRUE: FutureV4Config = {
-  removeLegacyPostBuildHeadAttribute: true,
   useCssCascadeLayers: true,
   siteStorageNamespacing: true,
   fasterByDefault: true,
@@ -125,6 +123,7 @@ export const DEFAULT_FUTURE_CONFIG: FutureConfig = {
 export const DEFAULT_MARKDOWN_HOOKS: MarkdownHooks = {
   onBrokenMarkdownLinks: 'warn',
   onBrokenMarkdownImages: 'throw',
+  onUnusedMarkdownDirectives: 'warn',
 };
 
 export const DEFAULT_MARKDOWN_MDX1COMPAT: MDX1CompatOptions = {
@@ -315,9 +314,6 @@ const FASTER_CONFIG_SCHEMA = Joi.alternatives()
 const FUTURE_V4_SCHEMA = Joi.alternatives()
   .try(
     Joi.object<FutureV4Config>({
-      removeLegacyPostBuildHeadAttribute: Joi.boolean().default(
-        DEFAULT_FUTURE_V4_CONFIG.removeLegacyPostBuildHeadAttribute,
-      ),
       useCssCascadeLayers: Joi.boolean().default(
         DEFAULT_FUTURE_V4_CONFIG.useCssCascadeLayers,
       ),
@@ -474,7 +470,10 @@ export const ConfigSchema = Joi.object<DocusaurusConfig>({
           is: Joi.valid(true),
           then: Joi.optional(),
           otherwise: Joi.object()
-            .pattern(/[\w-]+/, Joi.string())
+            .pattern(
+              /[\w-]+/,
+              Joi.alternatives().try(Joi.string(), Joi.boolean()),
+            )
             .required(),
         }),
         customElement: Joi.bool().default(false),
@@ -553,6 +552,12 @@ export const ConfigSchema = Joi.object<DocusaurusConfig>({
           Joi.function(),
         )
         .default(DEFAULT_CONFIG.markdown.hooks.onBrokenMarkdownImages),
+      onUnusedMarkdownDirectives: Joi.alternatives()
+        .try(
+          Joi.string().equal('ignore', 'log', 'warn', 'throw'),
+          Joi.function(),
+        )
+        .default(DEFAULT_CONFIG.markdown.hooks.onUnusedMarkdownDirectives),
     }).default(DEFAULT_CONFIG.markdown.hooks),
   }).default({
     ...DEFAULT_CONFIG.markdown,
@@ -617,23 +622,6 @@ Please migrate and move this option to code=${'siteConfig.markdown.hooks.onBroke
       : getVcsPreset('disabled');
 
     config.future.experimental_vcs = vcsConfig;
-  }
-
-  if (
-    config.future.faster.ssgWorkerThreads &&
-    !config.future.v4.removeLegacyPostBuildHeadAttribute
-  ) {
-    throw new Error(
-      `Docusaurus config ${logger.code(
-        'future.faster.ssgWorkerThreads',
-      )} requires the future flag ${logger.code(
-        'future.v4.removeLegacyPostBuildHeadAttribute',
-      )} to be turned on.
-If you use Docusaurus Faster, we recommend that you also activate Docusaurus v4 future flags: ${logger.code(
-        '{future: {v4: true}}',
-      )}
-All the v4 future flags are documented here: https://docusaurus.io/docs/api/docusaurus-config#future`,
-    );
   }
 
   if (

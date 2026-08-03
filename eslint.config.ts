@@ -52,14 +52,17 @@ const plugins = defineConfig([
 ]);
 
 const ignores = globalIgnores([
+  '.claude',
+  '.codex',
+  '**/dist/**',
+  '**/lib/**',
+  '**/build/**',
   '**/.docusaurus/**',
   '**/__fixtures__/**',
   '__mocks__',
-  'dist',
   'node_modules',
   '.yarn',
   '.history',
-  'build',
   'coverage',
   'examples/',
   'packages/lqip-loader/lib/*',

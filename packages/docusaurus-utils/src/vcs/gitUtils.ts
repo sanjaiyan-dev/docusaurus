@@ -15,11 +15,7 @@ import logger from '@docusaurus/logger';
 
 // Quite high/conservative concurrency value (it was previously "Infinity")
 // See https://github.com/facebook/docusaurus/pull/10915
-const DefaultGitCommandConcurrency =
-  // TODO Docusaurus v4: bump node, availableParallelism() now always exists
-  (typeof os.availableParallelism === 'function'
-    ? os.availableParallelism()
-    : os.cpus().length) * 4;
+const DefaultGitCommandConcurrency = os.availableParallelism() * 4;
 
 const GitCommandConcurrencyEnv = process.env.DOCUSAURUS_GIT_COMMAND_CONCURRENCY
   ? parseInt(process.env.DOCUSAURUS_GIT_COMMAND_CONCURRENCY, 10)
@@ -491,11 +487,13 @@ The command exited with code ${result.exitCode}: ${result.stderr}`,
   for (const logLine of logLines) {
     if (logLine.startsWith('t:')) {
       // t:<timestamp>,a:<author name>
-      const [timestampStr, authorStr] = logLine.split(',') as [string, string];
-      const timestamp = Number.parseInt(timestampStr.slice(2), 10) * 1000;
-      const author = authorStr.slice(2);
-
-      runningDate = timestamp;
+      // We can't use split(',') because author names may contain commas
+      // Example: "t:123456,a:John Doe, Jr."
+      const [timestampStr, author] = logLine.slice(2).split(',a:') as [
+        string,
+        string,
+      ];
+      runningDate = Number.parseInt(timestampStr, 10) * 1000;
       runningAuthor = author;
     }
 

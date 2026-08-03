@@ -396,6 +396,24 @@ describe('commit info APIs', () => {
         }
       `);
     });
+
+    it('preserves author names containing commas', async () => {
+      const {repoDir, git} = await createGitRepoEmpty();
+
+      await git.commitFile('comma-author.txt', {
+        fileContent: 'content',
+        commitMessage: 'Commit by author with comma in name',
+        commitDate: '2024-01-15',
+        commitAuthor: 'Doe, Jane <jane@example.com>',
+      });
+
+      const filesInfo = await getGitRepositoryFilesInfo(repoDir);
+      const fileInfo = filesInfo.get('comma-author.txt');
+
+      expect(fileInfo).toBeDefined();
+      expect(fileInfo!.creation.author).toBe('Doe, Jane');
+      expect(fileInfo!.lastUpdate.author).toBe('Doe, Jane');
+    });
   });
 });
 
@@ -423,7 +441,8 @@ describe('getGitRepoRoot', () => {
 
   it('returns Docusaurus repo for cwd=__dirname', async () => {
     const cwd = __dirname;
-    await expect(getGitRepoRoot(cwd)).resolves.toMatch(/docusaurus$/);
+    const repoRoot = path.resolve(cwd, '..', '..', '..', '..', '..');
+    await expect(getGitRepoRoot(cwd)).resolves.toEqual(repoRoot);
   });
 
   it('rejects for cwd=repoDir/doesNotExist', async () => {

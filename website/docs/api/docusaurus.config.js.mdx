@@ -149,7 +149,7 @@ Allow to customize the presence/absence of a trailing slash at the end of URLs/l
 
 Each static hosting provider serves static files differently (this behavior may even change over time).
 
-Refer to the [deployment guide](../deployment.mdx) and [slorber/trailing-slash-guide](https://github.com/slorber/trailing-slash-guide) to choose the appropriate setting.
+Refer to the [deployment guide](../deployment/index.mdx) and [slorber/trailing-slash-guide](https://github.com/slorber/trailing-slash-guide) to choose the appropriate setting.
 
 :::
 
@@ -250,7 +250,6 @@ Example:
 export default {
   future: {
     v4: {
-      removeLegacyPostBuildHeadAttribute: true,
       useCssCascadeLayers: true,
       siteStorageNamespacing: true,
       fasterByDefault: true,
@@ -272,7 +271,6 @@ export default {
 ```
 
 - `v4`: Permits to opt-in for upcoming Docusaurus v4 breaking changes and features, to prepare your site in advance for this new version. Use `true` as a shorthand to enable all the flags.
-  - [`removeLegacyPostBuildHeadAttribute`](https://github.com/facebook/docusaurus/pull/10435): Removes the legacy `plugin.postBuild({head})` API that prevents us from applying useful SSG optimizations ([explanations](https://github.com/facebook/docusaurus/pull/10850)).
   - [`useCssCascadeLayers`](https://github.com/facebook/docusaurus/pull/11142): This enables the [Docusaurus CSS Cascade Layers plugin](./plugins/plugin-css-cascade-layers.mdx) with pre-configured layers that we plan to apply by default for Docusaurus v4.
   - [`siteStorageNamespacing`](https://github.com/facebook/docusaurus/pull/11797): Defaults the [`storage.namespace`](#storage) config to `true` instead of `false`. This enables automatic browser storage key namespacing, which avoids storage key conflicts when multiple Docusaurus sites are hosted under the same domain, or on localhost.
   - [`fasterByDefault`](https://github.com/facebook/docusaurus/pull/11802): Defaults all `future.faster` flags to `true` instead of `false`. This enables [Docusaurus Faster](https://github.com/facebook/docusaurus/issues/10556) features by default. Requires having `@docusaurus/faster` in your dependencies. If you explicitly set individual `faster` flags, those explicit values take precedence.
@@ -285,7 +283,7 @@ export default {
   - [`rspackBundler`](https://github.com/facebook/docusaurus/pull/10402): Use [Rspack](https://rspack.dev/) to bundle your app (instead of [webpack](https://webpack.js.org/)).
   - [`rspackPersistentCache`](https://github.com/facebook/docusaurus/pull/10931): Use [Rspack Persistent Cache](https://rspack.dev/config/cache) to re-build your app faster on subsequent builds. Requires `rspackBundler: true`. Requires persisting `./node_modules/.cache` across rebuilds.
   - [`mdxCrossCompilerCache`](https://github.com/facebook/docusaurus/pull/10479): Compile MDX files only once for both browser/Node.js environments instead of twice.
-  - [`ssgWorkerThreads`](https://github.com/facebook/docusaurus/pull/10826): Using a Node.js worker thread pool to execute the static site generation phase faster. Requires `future.v4.removeLegacyPostBuildHeadAttribute` to be turned on.
+  - [`ssgWorkerThreads`](https://github.com/facebook/docusaurus/pull/10826): Using a Node.js worker thread pool to execute the static site generation phase faster.
   - [`gitEagerVcs`](https://github.com/facebook/docusaurus/pull/11512): Upgrades the default [VCS strategy](#vcs) to `default-v2`, that reads your whole Git repository at once instead of per-file, making Git operations faster on large repositories.
 - `experimental_router`: The router type to use. Possible values are `browser` and `hash`. Defaults to `browser`. The `hash` router is only useful for rare cases where you want to opt-out of static site generation, have a fully client-side app with a single `index.html` entrypoint file. This can be useful to distribute a Docusaurus site as a `.zip` archive that you can [browse locally without running a web server](https://github.com/facebook/docusaurus/issues/3825).
 - [`experimental_vcs`](#vcs): The Version Control System (VCS) implementation to use to read file info (creation/last update date/author). Read the [dedicated section](#vcs) below for details.
@@ -663,7 +661,7 @@ type MarkdownAnchorsConfig = {
 type OnBrokenMarkdownLinksFunction = (params: {
   sourceFilePath: string; // MD/MDX source file relative to cwd
   url: string; // Link url
-  node: Link | Definition; // mdast Node
+  node: Link | Definition; // mdast node
 }) => void | string;
 
 type OnBrokenMarkdownImagesFunction = (params: {
@@ -672,11 +670,19 @@ type OnBrokenMarkdownImagesFunction = (params: {
   node: Image; // mdast node
 }) => void | string;
 
+type OnUnusedMarkdownDirectivesFunction = (params: {
+  sourceFilePath: string; // MD/MDX source file relative to cwd
+  directives: Directives[]; // mdast nodes
+}) => void | string;
+
 type ReportingSeverity = 'ignore' | 'log' | 'warn' | 'throw';
 
 type MarkdownHooks = {
   onBrokenMarkdownLinks: ReportingSeverity | OnBrokenMarkdownLinksFunction;
   onBrokenMarkdownImages: ReportingSeverity | OnBrokenMarkdownImagesFunction;
+  onUnusedMarkdownDirectives:
+    | ReportingSeverity
+    | OnUnusedMarkdownDirectivesFunction;
 };
 
 type MarkdownConfig = {
@@ -720,6 +726,7 @@ export default {
     hooks: {
       onBrokenMarkdownLinks: 'warn',
       onBrokenMarkdownImages: 'throw',
+      onUnusedMarkdownDirectives: 'warn',
     },
   },
 };
@@ -742,6 +749,7 @@ export default {
 | `hooks` | `MarkdownHooks` | `object` | Make it possible to customize the MDX loader behavior with callbacks or built-in options. |
 | `hooks.onBrokenMarkdownLinks` | `ReportingSeverity \| OnBrokenMarkdownLinksFunction` | `'warn'` | Hook to customize the behavior when encountering a broken Markdown link URL. With the callback function, you can return a new link URL, or alter the link [mdast node](https://github.com/syntax-tree/mdast). |
 | `hooks.onBrokenMarkdownImages` | `ReportingSeverity \| OnBrokenMarkdownImagesFunction` | `'throw'` | Hook to customize the behavior when encountering a broken Markdown image URL. With the callback function, you can return a new image URL, or alter the image [mdast node](https://github.com/syntax-tree/mdast). |
+| `hooks.onUnusedMarkdownDirectives` | `ReportingSeverity \| OnUnusedMarkdownDirectivesFunction` | `'warn'` | Hook to customize the behavior when encountering an unused [Markdown directive](https://github.com/remarkjs/remark-directive). Also accepts a callback function, giving you access to the raw `Directive` AST nodes. |
 
 ```mdx-code-block
 </APITable>
