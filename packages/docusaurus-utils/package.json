@@ -21,7 +21,7 @@
     "@docusaurus/logger": "3.10.1",
     "@docusaurus/types": "3.10.1",
     "@docusaurus/utils-common": "3.10.1",
-    "execa": "^5.1.1",
+    "execa": "^10.0.0",
     "file-loader": "^6.2.0",
     "fs-extra": "^11.2.0",
     "github-slugger": "^2.0.0",
@@ -46,7 +46,7 @@
     "@types/dedent": "^0.7.0",
     "@types/micromatch": "^4.0.10",
     "@types/js-yaml": "^4.0.9",
-    "@types/react-dom": "^19.2.3",
+    "@types/react-dom": "^19.3.0",
     "dedent": "^1.7.2"
   }
 }

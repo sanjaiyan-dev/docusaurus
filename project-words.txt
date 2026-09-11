@@ -56,8 +56,6 @@ Datagit's
 dedup
 definitelytyped
 devto
-Dhub
-dhub
 dingers
 Dmitry
 Docu
@@ -205,6 +203,7 @@ playbtn
 Plushie
 plushie
 plushies
+Preapproved
 precached
 precaching
 prerendered
@@ -314,6 +313,7 @@ unlinkable
 Unlisteds
 unlisteds
 unlocalized
+unminified
 unstub
 unswizzle
 upvotes
